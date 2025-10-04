@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>ESP32 Relay Control Dashboard</title>
+  <title>ESP32 Relay Control</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
@@ -10,53 +10,58 @@
       text-align: center;
       background-color: #f9f9f9;
       margin: 0;
-      padding: 0 10px 40px;
+      padding: 0 5px 4px;
       display: flex;
       flex-direction: column;
-      min-height: 100vh;
-      justify-content: space-between;
+      min-height: 10vh;
+      justify-content: space-evenly;
+      align-items: center ;
     }
     h1 {
-      margin-top: 30px;
+      margin-top: 5px;
       font-size: 1.8rem;
     }
     .relay-card {
-      display: inline-block;
+      height:100px ;
+      width: 100px;
+      /*display: inline-block;*/
       background-color: white;
-      padding: 20px;
-      margin: 15px;
+      justify-content: center;
+      padding: 5px;
+      margin: 5px;
       border-radius: 15px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      width: 220px;
+      box-shadow: 0 4px 5px rgba(0,0,0,0.1);
+      /*width: 5%;*/
       vertical-align: top;
     }
     .relay-card h2 {
-      margin-bottom: 10px;
-      font-size: 1.3rem;
+      margin-bottom: 4px;
+      font-size: 0.8rem;
     }
     .relay-card p {
-      margin-bottom: 10px;
+      margin-bottom: 4px;
       font-size: 1rem;
     }
     .relay-card button {
-      padding: 10px 20px;
+      padding: 10px 10px;
       border: none;
-      border-radius: 10px;
+      border-radius: 50%;/*10px;*/
+      justify-content: center;
       color: white;
       background-color: blue;
       cursor: pointer;
-      font-size: 16px;
-	  width: 90%;
+      font-size: 6px;
+	    width: 40%;
       transition: opacity 0.3s ease;
     }
     .relay-card button:hover {
-      opacity: 0.8;
+      opacity: 1.0;
     }
     #allOffBtn, #logoutBtn {
-      max-width: 300px;
-      width: 90%;
-      padding: 12px 25px;
-      font-size: 16px;
+      max-width: 150px;
+      width: 80%;
+      padding: 10px 20px;
+      font-size: 12px;
       border: none;
       border-radius: 10px;
       cursor: pointer;
@@ -126,16 +131,16 @@
       justify-content: center;
     }
     /* Smaller devices */
-    @media (max-width: 700px) {
-      .relay-card {
-        width: 90%;
-        margin: 10px auto;
-        display: block;
-      }
-      body {
-        padding: 0 10px 60px;
-      }
-    }
+    /*@media (max-width: 700px) {*/
+      /*.relay-card {*/
+        /*width: 90%;*/
+        /*margin: 10px auto;*/
+        /*display: block;*/
+      /*}*/
+      /*body {*/
+        /*padding: 0 10px 60px;*/
+      /*}*/
+    /*}*/
     footer {
       font-size: 0.9rem;
       color: #666;
@@ -146,7 +151,7 @@
 </head>
 <body>
 
-  <h1>ESP32 Relay Control Dashboard</h1>
+  <h1>ESP32</h1>
 
   <!-- Login form -->
   <div id="loginForm">
@@ -181,6 +186,16 @@
         <p>Status: <span id="status4">Loading...</span></p>
         <button id="btn4">Toggle</button>
       </div>
+      <div class="relay-card">
+        <h2>SOCKET</h2>
+        <p>Status: <span id="status5">Loading...</span></p>
+        <button id="btn5">Toggle</button>
+      </div>
+      <div class="relay-card">
+        <h2>TV</h2>
+        <p>Status: <span id="status6">Loading...</span></p>
+        <button id="btn6">Toggle</button>
+      </div>
     </div>
 
     <button id="allOffBtn">All OFF</button>
@@ -188,7 +203,7 @@
   </div>
 
   <footer>
-    Created by Tech StudyCell
+    Created by Md. jahangir Alam
   </footer>
 
   <!-- Firebase SDKs -->
@@ -254,6 +269,8 @@
         { id: 2, path: "relay2" },
         { id: 3, path: "relay3" },
         { id: 4, path: "relay4" },
+        { id: 5, path: "relay5" },
+        { id: 6, path: "relay6" },
       ];
 
       relays.forEach(relay => {
@@ -295,6 +312,4 @@
     };
   </script>
 </body>
-
 </html>
-
