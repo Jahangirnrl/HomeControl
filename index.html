@@ -88,13 +88,19 @@
       display: none;
     }
     #loginForm {
+      height: auto;
       max-width: 400px;
-      margin: 80px auto 20px;
+      
+      margin: 200px auto 20px;
+      align-items: flex-end;
       background: white;
       padding: 30px 20px;
       border-radius: 15px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
+      box-position: relative;
+      bottom: 0px;
+      }
+
     #loginForm input {
       width: 100%;
       padding: 12px 15px;
@@ -124,7 +130,7 @@
       background-color: #1565c0;
     }
     #dashboard .relay-container {
-      max-width: 960px;
+      max-width: 860px;
       margin: 20px auto 0;
       display: flex;
       flex-wrap: wrap;
@@ -146,12 +152,13 @@
       color: #666;
       padding: 10px 0;
       margin-top: 40px;
+      align-items: self-end;
     }
   </style>
 </head>
 <body>
 
-  <h1>ESP32</h1>
+  <h1>MAIN ROOM CONTROL</h1>
 
   <!-- Login form -->
   <div id="loginForm">
