@@ -20,7 +20,7 @@
     padding: 10px;
   }
 
-  /* --- LOGIN SCREEN STYLES (NO CHANGE) --- */
+  /* --- LOGIN SCREEN STYLES --- */
   #loginScreen {
     display: flex;
     flex-direction: column;
@@ -75,7 +75,7 @@
     font-size: 0.85rem;
   }
 
-  /* --- HEADER AND PROFILE MENU STYLES (MODIFIED) --- */
+  /* --- HEADER AND PROFILE MENU STYLES --- */
   header {
     display: grid;
     /* 3-column layout: Left Spacer | Centered Content | Right Button */
@@ -148,7 +148,7 @@
   .logout-btn:hover { background: #b91c1c; }
 
 
-  /* --- DASHBOARD ELEMENTS (NO CHANGE) --- */
+  /* --- DASHBOARD ELEMENTS --- */
   .tabs { display:flex; gap:6px; margin-top:6px; }
   .tab-btn { 
     padding:6px 12px; 
@@ -384,6 +384,7 @@
         <button class="tab-btn" data-tab="logs">Logs</button>
       </div>
       <div id="status" class="status">Offline</div>
+      <div id="versionInfo" style="font-size: 0.7rem; color: #94a3b8; margin-top: 5px;"></div>
     </div>
     
     <div class="profile-menu">
@@ -516,6 +517,8 @@ const auth = getAuth(app);
 
 // --- GLOBAL STATE & UI ELEMENTS ---
 const SESSION_KEY = 'room2_session_active';
+const DASHBOARD_VERSION = 'v1.3.1'; 
+
 const loginScreen = document.getElementById('loginScreen');
 const dashboardContainer = document.getElementById('dashboardContainer');
 const loginEmail = document.getElementById('loginEmail');
@@ -529,6 +532,7 @@ const userEmailDisplay = document.getElementById('userEmailDisplay');
 const logoutBtn = document.getElementById('logoutBtn');
 
 const statusEl = document.getElementById('status');
+const versionInfoEl = document.getElementById('versionInfo');
 const uptimeEl = document.getElementById('uptime');
 const lastDisconnectEl = document.getElementById('lastDisconnect');
 const logViewer = document.getElementById('logViewer');
@@ -546,6 +550,41 @@ let totalOfflineSeconds = 0;
 let lastStateChangeTime = Date.now(); 
 
 
+// --- UTILITIES & DASHBOARD LOGIC ---
+
+// Dhaka Time Options for robust time zone handling (fixes time offset issue)
+const DHAKA_OPTIONS = { 
+  hour: '2-digit', 
+  minute: '2-digit', 
+  second: '2-digit',
+  hour12: true, 
+  timeZone: 'Asia/Dhaka' 
+};
+
+function formatTime(timestamp) {
+  if (!timestamp) return '--:--:--';
+  const d = new Date(timestamp);
+  return d.toLocaleTimeString('en-US', DHAKA_OPTIONS);
+}
+
+function addLogEntry(type, message) {
+    const time = new Date().toLocaleTimeString('en-US', DHAKA_OPTIONS);
+    const typeClass = `log-entry-type-${type.toLowerCase()}`;
+    
+    const entry = document.createElement('div');
+    entry.className = 'log-entry';
+    entry.innerHTML = `<span class="log-entry-time">${time}</span><span class="${typeClass}">${type}:</span> ${message}`;
+
+    logViewer.prepend(entry);
+    while (logViewer.children.length > 50) {
+        logViewer.removeChild(logViewer.lastChild);
+    }
+}
+
+// Set version on load
+versionInfoEl.textContent = `Dashboard Version: ${DASHBOARD_VERSION}`;
+
+
 // --- AUTHENTICATION & SESSION LOGIC ---
 function showLogin() {
     dashboardContainer.style.display = 'none';
@@ -557,6 +596,11 @@ function showDashboard(user) {
     userEmailDisplay.textContent = user.email;
     loginScreen.style.display = 'none';
     dashboardContainer.style.display = 'block';
+    // NEW: Store dashboard version in Firebase RTDB
+    if (user && db) {
+        set(ref(db, 'HOME/ROOM_2/version'), DASHBOARD_VERSION); 
+        addLogEntry('INFO', `Dashboard version ${DASHBOARD_VERSION} logged to RTDB.`);
+    }
 }
 
 function handleAuthError(error) {
@@ -625,28 +669,6 @@ window.addEventListener('click', (event) => {
         }
     }
 });
-
-
-// --- UTILITIES & DASHBOARD LOGIC ---
-function formatTime(timestamp) {
-  if (!timestamp) return '--:--:--';
-  const d = new Date(timestamp);
-  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-}
-
-function addLogEntry(type, message) {
-    const time = formatTime(Date.now());
-    const typeClass = `log-entry-type-${type.toLowerCase()}`;
-    
-    const entry = document.createElement('div');
-    entry.className = 'log-entry';
-    entry.innerHTML = `<span class="log-entry-time">${time}</span><span class="${typeClass}">${type}:</span> ${message}`;
-
-    logViewer.prepend(entry);
-    while (logViewer.children.length > 50) {
-        logViewer.removeChild(logViewer.lastChild);
-    }
-}
 
 
 // --- STATUS DISPLAY LOGIC ---
