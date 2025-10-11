@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+  <title>ROOM_2 Dashboard</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: "Inter", sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+    }
+
+    header {
+      width: 100%;
+      text-align: center;
+      padding: 8px 0;
+    }
+
+    header h1 {
+      font-size: 1.3rem;
+      margin: 4px 0;
+      color: #38bdf8;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: #ef4444;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .status.online {
+      background: #10b981;
+    }
+
+    .info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      width: 100%;
+      font-size: 0.85rem;
+      margin-top: 4px;
+    }
+
+    .panel {
+      background: rgba(30, 41, 59, 0.8);
+      border-radius: 12px;
+      padding: 10px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .panel .label {
+      color: #94a3b8;
+      font-size: 0.75rem;
+    }
+
+    .panel .value {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .relays {
+      display: flex;
+      justify-content: center;
+      gap: 22px;
+      margin: 90px 0;  
+    }
+
+    .relay-btn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 3px solid #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #1e293b;
+      font-weight: 700;
+      color: #94a3b8;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .relay-btn.on {
+      background: #10b981;
+      border-color: #34d399;
+      color: #042f2e;
+    }
+
+    footer {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: auto; /*margin-bottom: auto;*/
+    }
+
+    footer .panel {
+      background: rgba(30, 41, 59, 0.9);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ROOM_2 Smart Dashboard</h1>
+    <div id="status" class="status">Offline</div>
+  </header>
+
+  <div class="info">
+    <div class="panel">
+      <div class="label">IP</div>
+      <div id="ip" class="value">--</div>
+    </div>
+    <div class="panel">
+      <div class="label">MAC</div>
+      <div id="mac" class="value">--</div>
+    </div>
+    <div class="panel">
+      <div class="label">SSID</div>
+      <div id="ssid" class="value">--</div>
+    </div>
+    <div class="panel">
+      <div class="label">Uptime</div>
+      <div id="uptime" class="value">--</div>
+    </div>
+<div class="panel">
+      <div class="label">SinRise</div>
+      <div id="sunrise" class="value">--</div>
+    </div>
+    <div class="panel">
+      <div class="label">SunSet</div>
+      <div id="sunset" class="value">--</div>
+    </div>
+  </div>
+
+  <div class="relays">
+    <div id="r1" class="relay-btn">FAN</div>
+    <div id="r2" class="relay-btn">LIGHT</div>
+    <div id="r3" class="relay-btn">FAN-2</div>
+    <div id="r4" class="relay-btn">DIM-L</div>
+  </div>
+
+  <footer>
+    <div class="panel">
+      <div class="label">LastUpdate</div>
+      <div id="lastUpdateHuman" class="value">--:--</div>
+    </div>
+    <div class="panel">
+      <div class="label">LastUpdate</div>
+      <div id="lastUpdate" class="value">--:--</div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAei8j8RQXq_zspkohtH40g_gvHUfIx-Uw",
+      authDomain: "home-control-df716.firebaseapp.com",
+      databaseURL: "https://home-control-df716-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "home-control-df716",
+      storageBucket: "home-control-df716.firebasestorage.app",
+      messagingSenderId: "956714070689",
+      appId: "1:956714070689:web:414179e22a04601349b6e0",
+      measurementId: "G-LEHP8KM47D"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const statusEl = document.getElementById('status');
+    const ipEl = document.getElementById('ip');
+    const macEl = document.getElementById('mac');
+    const ssidEl = document.getElementById('ssid');
+    const uptimeEl = document.getElementById('uptime');
+    const sunriseEl = document.getElementById('sunrise');
+    const sunsetEl = document.getElementById('sunset');
+    const lastUpdateHumanEl = document.getElementById('lastUpdateHuman');
+    const lastUpdateEl = document.getElementById('lastUpdate');
+
+    const relayBtns = [
+      document.getElementById('r1'),
+      document.getElementById('r2'),
+      document.getElementById('r3'),
+      document.getElementById('r4')
+    ];
+
+    function setRelayState(btn, on) {
+      if (on) btn.classList.add('on');
+      else btn.classList.remove('on');
+    }
+
+    function toggleRelay(index) {
+      const path = `HOME/ROOM_2/relay${index + 1}`;
+      get(ref(db, path)).then(snap => {
+        const newVal = !snap.val();
+        set(ref(db, path), newVal);
+      });
+    }
+
+    relayBtns.forEach((btn, i) => {
+      btn.addEventListener('click', () => toggleRelay(i));
+      onValue(ref(db, `HOME/ROOM_2/relay${i + 1}`), (snap) => {
+        setRelayState(btn, !!snap.val());
+      });
+    });
+
+    // Realtime data
+    onValue(ref(db, 'HOME/ROOM_2/online'), (snap) => {
+      const v = snap.val();
+      if (v) {
+        statusEl.textContent = "Online";
+        statusEl.classList.add("online");
+      } else {
+        statusEl.textContent = "Offline";
+        statusEl.classList.remove("online");
+      }
+    });
+
+    onValue(ref(db, 'HOME/ROOM_2/device/ip'), s => ipEl.textContent = s.val() || '--');
+    onValue(ref(db, 'HOME/ROOM_2/device/mac'), s => macEl.textContent = s.val() || '--');
+    onValue(ref(db, 'HOME/ROOM_2/device/ssid'), s => ssidEl.textContent = s.val() || '--');
+    onValue(ref(db, 'HOME/ROOM_2/uptime'), s => uptimeEl.textContent = s.val() || '--');
+    onValue(ref(db, 'HOME/ROOM_2/sunrise'), s => sunriseEl.textContent = s.val() || '--:--');
+    onValue(ref(db, 'HOME/ROOM_2/sunset'), s => sunsetEl.textContent = s.val() || '--:--');
+    onValue(ref(db, 'HOME/ROOM_2/lastUpdateHuman'), s => lastUpdateHumanEl.textContent = s.val() || '--:--');
+    onValue(ref(db, 'HOME/ROOM_2/lastUpdate'), s => lastUpdateEl.textContent = s.val() || '--:--');	
+
+    // Device Online on Not ? Cheking
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Reference paths
+    const uptimeRef = db.ref("/HOME/ROOM_2/uptime");
+    const onlineRef = db.ref("/HOME/ROOM_2/online");
+
+    let previousValue = null;
+    let lastChangeTime = null;
+    let online = false;
+
+    // 🔄 Listen for uptime changes from Firebase
+    uptimeRef.on("value", (snapshot) => {
+      const currentValue = snapshot.val();
+      document.getElementById("uptimeDisplay").textContent = "Uptime: " + currentValue;
+
+      // Check if value changed
+      if (previousValue === null || currentValue !== previousValue) {
+        previousValue = currentValue;
+        lastChangeTime = Date.now();
+        online = true;
+        updateStatus(true, "(number changed)");
+        updateFirebaseOnline(true);
+      }
+    });
+
+    // 🕒 Check every second for inactivity (>40s)
+    setInterval(() => {
+      if (lastChangeTime) {
+        const elapsed = (Date.now() - lastChangeTime) / 1000;
+        if (elapsed > 30 && online) {
+          online = false;
+          updateStatus(false, `(no change for ${Math.floor(elapsed)}s)`);
+          updateFirebaseOnline(false);
+        } else if (elapsed >= 6 && elapsed <= 40 && !online) {
+          online = true;
+          updateStatus(true, `(changed within ${Math.floor(elapsed)}s)`);
+          updateFirebaseOnline(true);
+        }
+      }
+    }, 1000);
+
+    // ✅ UI update
+    function updateStatus(state, info = "") {
+      const status = document.getElementById("status");
+      status.textContent = `Online: ${state} ${info}`;
+      status.style.color = state ? "green" : "red";
+    }
+
+    // ✅ Update /HOME/ROOM_1/online in Firebase
+    function updateFirebaseOnline(state) {
+      onlineRef.set(state);
+    }
+
+	</script>
+</body>
+</html>
